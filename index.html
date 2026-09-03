@@ -347,7 +347,9 @@
     <h2>Réservez votre place</h2>
     <p class="sub">Quelques informations et c'est noté — places limitées.</p>
 
-    <form id="jpoForm">
+    <form action="https://api.web3forms.com/submit" method="POST" id="jpoForm">
+  <input type="hidden" name="access_key" value="bfe7d4bf-6164-42aa-984a-1d85a2205267">
+  <input type="hidden" name="subject" value="Nouvelle inscription JPO - Innova Formation">
       <div class="row2">
         <div>
           <label for="prenom">Prénom</label>
@@ -402,15 +404,41 @@
 </footer>
 
 <script>
-  const form = document.getElementById('jpoForm');
+ const form = document.getElementById('jpoForm');
+  const statusEl = document.getElementById('formStatus');
+  const submitBtn = document.getElementById('submitBtn');
   const successBox = document.getElementById('successBox');
 
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', function(e) {
     e.preventDefault();
-    
-    // Masque le formulaire et affiche le message de succès
-    form.style.display = 'none';
-    successBox.style.display = 'block';
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Envoi en cours…";
+
+    const formData = new FormData(form);
+
+    fetch('https://api.web3forms.com/submit', {
+      method: 'POST',
+      body: formData
+    })
+    .then(async (response) => {
+      let json = await response.json();
+      if (response.status == 200) {
+        form.style.display = 'none';
+        successBox.style.display = 'block';
+      } else {
+        statusEl.textContent = json.message || "Une erreur est survenue.";
+        statusEl.className = 'status err';
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Confirmer mon inscription";
+      }
+    })
+    .catch(error => {
+      console.error(error);
+      statusEl.textContent = "Une erreur est survenue, réessayez dans un instant.";
+      statusEl.className = 'status err';
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Confirmer mon inscription";
+    });
   });
 </script>
 
